@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+postmortems/*.md
+demo-app/repo/
+demo-app/logs/

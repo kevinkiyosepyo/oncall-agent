@@ -1,0 +1,27 @@
+==============================================================
+🔴 INCIDENT BRIEF: HighErrorRate — demo-shop
+==============================================================
+severity: critical   endpoint: /checkout
+Error rate on demo-shop /checkout above 20% for 2m
+--------------------------------------------------------------
+*Impact:* 💥 sev1 · single_endpoint · affected: POST /checkout
+Checkout is completely broken—72.7% of checkout requests are failing due to a missing discount code in the database, blocking customer purchases.
+~72.7% of checkout requests failing (baseline 0%)
+--------------------------------------------------------------
+*Suspect commit:* 🔎 `6c56805` (high confidence)
+Changed apply_discount to directly index DISCOUNTS[code] instead of using .get() with a default, removing the safe fallback for missing/None discount codes. Any checkout request with a discount_code not present in DISCOUNTS (including None, the default value) now raises a KeyError instead of falling back to NO_DISCOUNT, causing a 500 response on /checkout.
+> diff: `-    discount = DISCOUNTS.get(code, NO_DISCOUNT) if code else NO_DISCOUNT
++    discount = DISCOUNTS[code]
+     return round(subtotal * (1 - discount), 2)`
+> error: `KeyError: None in apply_discount (pricing.py, in apply_discount) — discount code missing from DISCOUNTS table`
+--------------------------------------------------------------
+*Runbook:* 📖 `runbooks/high-error-rate.md` (high confidence)
+Alert name is HighErrorRate with 5xx responses on /checkout exceeding 20% threshold, matching the runbook's stated failure mode of elevated 5xx responses on HTTP endpoints.
+First actions:
+  1. Check recent deployments to demo-shop in the last 2 minutes to identify any new code pushing 5xx errors
+  2. Review error logs for /checkout endpoint to identify the root cause (unhandled exceptions, dependency timeouts, or failing service calls)
+  3. Check status of downstream dependencies (payment processor, database, cache) that /checkout calls
+  4. If a bad deploy is identified, prepare a rollback; if a dependency failure, escalate to the owning team
+--------------------------------------------------------------
+incident e000bff0-de16-43f6-940f-5817f0993f02 · fired 2026-07-02 23:15:00 UTC
+==============================================================

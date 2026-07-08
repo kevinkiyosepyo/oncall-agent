@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: oncall-agent
+Version: 0.1.0
+Summary: Autonomous incident response agent: alert webhook -> context -> LLM analysis -> Slack brief -> postmortem
+Requires-Python: >=3.12
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: sqlalchemy>=2.0
+Requires-Dist: psycopg[binary]>=3.2
+Requires-Dist: pydantic-settings>=2.4
+Requires-Dist: anthropic>=0.60
+Requires-Dist: httpx>=0.27
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"

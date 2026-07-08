@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: oncall
+          POSTGRES_PASSWORD: oncall
+          POSTGRES_DB: oncall
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U oncall"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: agent/pyproject.toml
+
+      - name: Install
+        run: pip install "./agent[dev]"
+
+      - name: Test
+        working-directory: agent
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://oncall:oncall@localhost:5432/oncall_test
+        run: python -m pytest -v

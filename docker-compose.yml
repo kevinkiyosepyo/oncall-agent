@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: oncall
+      POSTGRES_PASSWORD: oncall
+      POSTGRES_DB: oncall
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oncall -d oncall"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  agent:
+    build: ./agent
+    ports:
+      - "8080:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://oncall:oncall@postgres:5432/oncall
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_AUTH_TOKEN: ${ANTHROPIC_AUTH_TOKEN:-}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+    volumes:
+      - ./runbooks:/srv/runbooks:ro
+      - ./postmortems:/srv/postmortems
+      - ./demo-app/repo:/srv/demo-repo:ro
+      - ./demo-app/logs:/srv/demo-logs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  demo-app:
+    build: ./demo-app
+    ports:
+      - "8081:8000"
+    volumes:
+      - ./demo-app/logs:/var/log/demo
+
+volumes:
+  pgdata:

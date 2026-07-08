@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "groupKey": "{}:{alertname=\"HighErrorRate\"}",
+  "status": "resolved",
+  "receiver": "oncall-agent",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "HighErrorRate",
+        "service": "demo-shop",
+        "severity": "critical",
+        "endpoint": "/checkout"
+      },
+      "annotations": {
+        "summary": "Error rate on demo-shop /checkout above 20% for 2m"
+      },
+      "startsAt": "2026-07-02T18:00:00Z",
+      "endsAt": "2026-07-02T18:14:30Z",
+      "fingerprint": "d38f2a9c1b7e4a55"
+    }
+  ]
+}
